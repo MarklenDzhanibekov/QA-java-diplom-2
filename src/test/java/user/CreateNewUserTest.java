@@ -3,6 +3,7 @@ import data.GeneratedData;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.ValidatableResponse;
 import org.junit.*;
+import requests.user.DeleteUserRequest;
 import requests.user.PostUserRequest;
 import steps.StepToDeleteUser;
 import steps.StepToGetTokens;
@@ -15,20 +16,27 @@ public class CreateNewUserTest {
     String name = newGeneratedData.getUserName();
     StepToGetTokens stepToGetTokens = new StepToGetTokens();
     String accessTokenFromResponse;
+    ValidatableResponse response, response2;
+
+    @Before
+    @DisplayName("getting preparations ready for the upcoming tests")
+    public void executedBeforeEach() {
+        PostUserRequest newPostUserRequest = new PostUserRequest();
+        response = newPostUserRequest.createNewUser(email, password, name);
+        response2 = newPostUserRequest.createNewUser(email, password, name);
+    }
 
     @After
     @DisplayName("delete all users that were created for tests purpose within current test")
     public void deleteAllUsersCreatedInLoginTestClass() {
-        StepToDeleteUser stepToDeleteUser = new StepToDeleteUser();
-        stepToDeleteUser.deletionUser(accessTokenFromResponse);
-    };
+        DeleteUserRequest deleteUserRequest = new DeleteUserRequest();
+        deleteUserRequest.deleteUser(accessTokenFromResponse);
+    }
 
     //Create a unique user
     @Test
     @DisplayName("Creating a new user")
     public void testUserCanBeCreated() {
-        PostUserRequest newPostUserRequest = new PostUserRequest();
-        ValidatableResponse response = newPostUserRequest.createNewUser(email, password, name);
         response.assertThat().body("success", equalTo(true)).and().statusCode(200);
         accessTokenFromResponse = stepToGetTokens.getAccessToken(response);
     }
@@ -37,9 +45,6 @@ public class CreateNewUserTest {
     @Test
     @DisplayName("Create a user that is already created")
     public void testTheSameUserCannotBeCreatedTwice() {
-        PostUserRequest newPostUserRequest = new PostUserRequest();
-        ValidatableResponse response = newPostUserRequest.createNewUser(email, password, name);
-        ValidatableResponse response2 = newPostUserRequest.createNewUser(email, password, name);
         response2.assertThat().body("success", equalTo(false))
                 .body("message", equalTo("User already exists"))
                 .and().statusCode(403);

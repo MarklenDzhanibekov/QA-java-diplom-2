@@ -5,7 +5,9 @@ import io.restassured.response.ValidatableResponse;
 import model.user.UserPojoModel;
 import model.user.UserCredentialsModelBuilder;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+import requests.user.DeleteUserRequest;
 import requests.user.PatchUserRequest;
 import requests.user.PostUserRequest;
 import steps.StepToDeleteUser;
@@ -23,29 +25,34 @@ public class UpdateUserCredentialsTest {
     String newName = newGeneratedData.getUserName();
     UserPojoModel userPojoModel = new UserPojoModel();
     String accessTokenFromResponse;
+    PostUserRequest newPostUserRequest = new PostUserRequest();
+    StepToGetTokens newStepToGetTokens = new StepToGetTokens();
+    ValidatableResponse response;
 
     @After
     @DisplayName("delete all users that were created for tests purpose within current test")
     public void deleteAllUsersCreatedInLoginTestClass() {
-        StepToDeleteUser stepToDeleteUser = new StepToDeleteUser();
-        stepToDeleteUser.deletionUser(accessTokenFromResponse);
-    };
+        DeleteUserRequest deleteUserRequest = new DeleteUserRequest();
+        deleteUserRequest.deleteUser(accessTokenFromResponse);
+    }
 
-    //Check whether name, email and password fields can be updated.
-    @Test
-    @DisplayName("User's email can be updated With Authorization")
-    public void emailCanBeUpdatedWithAuthorizationTest() {
-        PostUserRequest newPostUserRequest = new PostUserRequest();
-        StepToGetTokens newStepToGetTokens = new StepToGetTokens();
-
+    @Before
+    @DisplayName("getting preparations ready for the upcoming tests")
+    public void executedBeforeEach() {
         //Creating a new user
-        ValidatableResponse response = newPostUserRequest.createNewUserWB(new UserCredentialsModelBuilder.Builder()
+        response = newPostUserRequest.createNewUserWB(new UserCredentialsModelBuilder.Builder()
                         .withName(name)
                         .withEmail(email)
                         .withPassword(password)
                         .build()).assertThat()
                 .body("success", equalTo(true))
                 .statusCode(200);
+    }
+
+    //Check whether name, email and password fields can be updated.
+    @Test
+    @DisplayName("User's email can be updated With Authorization")
+    public void emailCanBeUpdatedWithAuthorizationTest() {
 
         //Extracting a user's access token
        accessTokenFromResponse = newStepToGetTokens.getAccessToken(response);
@@ -64,24 +71,12 @@ public class UpdateUserCredentialsTest {
         PostUserRequest postUserRequest = new PostUserRequest();
         ValidatableResponse response3 = postUserRequest.login(newEmail, password);
         response3.assertThat().body("success", equalTo(true)).and().statusCode(200);
-
     }
 
     //Check whether name, email and password fields can be updated.
     @Test
     @DisplayName("update a password without authorization")
     public void passwordCanBeUpdatedWithAuthorizationTest() {
-        PostUserRequest newPostUserRequest = new PostUserRequest();
-        StepToGetTokens newStepToGetTokens = new StepToGetTokens();
-
-        //Creating a new user
-        ValidatableResponse response = newPostUserRequest.createNewUserWB(new UserCredentialsModelBuilder.Builder()
-                        .withName(name)
-                        .withEmail(email)
-                        .withPassword(password)
-                        .build()).assertThat()
-                .body("success", equalTo(true))
-                .statusCode(200);
 
         //Extracting a user's access token
         accessTokenFromResponse = newStepToGetTokens.getAccessToken(response);
@@ -104,17 +99,6 @@ public class UpdateUserCredentialsTest {
     @Test
     @DisplayName("update a name with authorization")
     public void nameCanBeUpdatedWithAuthorizationTest() {
-        PostUserRequest newPostUserRequest = new PostUserRequest();
-        StepToGetTokens newStepToGetTokens = new StepToGetTokens();
-
-        //Creating a new user
-        ValidatableResponse response = newPostUserRequest.createNewUserWB(new UserCredentialsModelBuilder.Builder()
-                        .withName(name)
-                        .withEmail(email)
-                        .withPassword(password)
-                        .build()).assertThat()
-                .body("success", equalTo(true))
-                .statusCode(200);
 
         //Extracting a user's access token
         accessTokenFromResponse = newStepToGetTokens.getAccessToken(response);
@@ -140,22 +124,11 @@ public class UpdateUserCredentialsTest {
     @Test
     @DisplayName("update a password without authorization")
     public void updatePasswordWithOutAuthorizationTest() {
-        PostUserRequest newPostUserRequest = new PostUserRequest();
-        StepToGetTokens newStepToGetTokens = new StepToGetTokens();
-
-        //Creating a new user
-        ValidatableResponse response = newPostUserRequest.createNewUserWB(new UserCredentialsModelBuilder.Builder()
-                        .withName(name)
-                        .withEmail(email)
-                        .withPassword(password)
-                        .build()).assertThat()
-                .body("success", equalTo(true))
-                .statusCode(200);
 
         //Extracting a user's access token
         accessTokenFromResponse = "";
 
-        //Executing a PATCH request and verify that status 200 is coming back, and success has a "True" status
+        //Executing a PATCH request
         PatchUserRequest newPatchUserRequest = new PatchUserRequest();
         ValidatableResponse response1 = newPatchUserRequest.updateUser(accessTokenFromResponse,
                         new UserCredentialsModelBuilder.Builder()
@@ -169,26 +142,15 @@ public class UpdateUserCredentialsTest {
     @Test
     @DisplayName("update an email without authorization")
     public void updateEmailWithOutAuthorizationTest() {
-        PostUserRequest newPostUserRequest = new PostUserRequest();
-        StepToGetTokens newStepToGetTokens = new StepToGetTokens();
 
-        //Creating a new user
-        ValidatableResponse response = newPostUserRequest.createNewUserWB(new UserCredentialsModelBuilder.Builder()
-                        .withName(name)
-                        .withEmail(email)
-                        .withPassword(password)
-                        .build()).assertThat()
-                .body("success", equalTo(true))
-                .statusCode(200);
-
-        //Extracting a user's access token
+        //initializing empty access token
        accessTokenFromResponse = "";
 
         //Executing a PATCH request and verify that status 200 is coming back, and success has a "True" status
         PatchUserRequest newPatchUserRequest = new PatchUserRequest();
         ValidatableResponse response1 = newPatchUserRequest.updateUser(accessTokenFromResponse,
                         new UserCredentialsModelBuilder.Builder()
-                                .withPassword(newEmail)
+                                .withEmail(newEmail)
                                 .build())
                 .body("success", equalTo(false)).and()
                 .body("message", equalTo("You should be authorised"))
@@ -198,26 +160,15 @@ public class UpdateUserCredentialsTest {
     @Test
     @DisplayName("update name without authorization")
     public void updateNameWithOutAuthorizationTest() {
-        PostUserRequest newPostUserRequest = new PostUserRequest();
-        StepToGetTokens newStepToGetTokens = new StepToGetTokens();
 
-        //Creating a new user
-        ValidatableResponse response = newPostUserRequest.createNewUserWB(new UserCredentialsModelBuilder.Builder()
-                        .withName(name)
-                        .withEmail(email)
-                        .withPassword(password)
-                        .build()).assertThat()
-                .body("success", equalTo(true))
-                .statusCode(200);
-
-        //initialize empty access token
+        //initializing empty access token
         accessTokenFromResponse = "";
 
         //Executing a PATCH request and verify that status 200 is coming back, and success has a "True" status
         PatchUserRequest newPatchUserRequest = new PatchUserRequest();
         ValidatableResponse response1 = newPatchUserRequest.updateUser(accessTokenFromResponse,
                         new UserCredentialsModelBuilder.Builder()
-                                .withPassword(newName)
+                                .withName(newName)
                                 .build())
                 .body("success", equalTo(false)).and()
                 .body("message", equalTo("You should be authorised"))

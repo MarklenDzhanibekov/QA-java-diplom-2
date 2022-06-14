@@ -13,33 +13,20 @@ import java.util.List;
 
 public class GeneratedData {
 
-    @DisplayName("Method that's intended for generating new credentials for a new user")
-    public UserCredentialsModel dataForUser() {
-
-        String email = RandomStringUtils.randomAlphabetic(10) + "@" + RandomStringUtils.randomAlphabetic(5) + "." + RandomStringUtils.randomAlphabetic(3);
-        String password = RandomStringUtils.randomAlphabetic(10);
-        String name = RandomStringUtils.randomAlphabetic(10);
-        UserCredentialsModel userData = new UserCredentialsModel(email, password, name);
-        return userData;
-    }
-
     @DisplayName("Getter for generating a random username")
     public String getUserName() {
-        String name = RandomStringUtils.randomAlphabetic(10);
-        return name;
+        return RandomStringUtils.randomAlphabetic(10);
     }
 
     @DisplayName("Getter for generating a random email")
     public String getUserEmail() {
-        String email = RandomStringUtils.randomAlphabetic(10) + "@" + RandomStringUtils.randomAlphabetic(5)
+        return RandomStringUtils.randomAlphabetic(10) + "@" + RandomStringUtils.randomAlphabetic(5)
                 + "." + RandomStringUtils.randomAlphabetic(3);
-        return email;
     }
 
     @DisplayName("Getter for generating a random password")
     public String getUserPassword() {
-        String password = RandomStringUtils.randomAlphabetic(10);
-        return password;
+        return RandomStringUtils.randomAlphabetic(10);
     }
 
     @DisplayName("Getter for obtaining actual ingredients ID numbers. Actual ingredients are obtained using GET request")
@@ -50,9 +37,9 @@ public class GeneratedData {
         ValidatableResponse response = getIngredientsRequest.getAllIngredients();
         Ingredients ingredients = stepToExtractAllIngredients.extractOrderListBody(response);
 
-        List<String> ingredientsList = new ArrayList<String>();
+        List<String> ingredientsList =  new ArrayList<>();
         for(int i = 0; i < ingredients.getData().size(); i++) {
-            ingredientsList.add(ingredients.getData().get(0+i).get_id());
+            ingredientsList.add(ingredients.getData().get(i).get_id());
         }
         return ingredientsList;
     }

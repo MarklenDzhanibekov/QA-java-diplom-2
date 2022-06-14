@@ -6,6 +6,7 @@ import model.ingredients.IngredientsListModel;
 import org.junit.*;
 import requests.order.GetOrdersRequest;
 import requests.order.PostOrdersRequest;
+import requests.user.DeleteUserRequest;
 import requests.user.PostUserRequest;
 import steps.*;
 import static org.hamcrest.Matchers.equalTo;
@@ -21,17 +22,11 @@ public class GetOrderTest {
     PostUserRequest postUserRequest = new PostUserRequest();
     PostOrdersRequest postOrdersRequest = new PostOrdersRequest();
     GetOrdersRequest getOrdersRequest = new GetOrdersRequest();
+    ValidatableResponse response1, response2;
 
-    @After
-    @DisplayName("delete all users that were created for tests purpose within current test")
-    public void deleteAllUsersCreatedInLoginTestClass() {
-        StepToDeleteUser stepToDeleteUser = new StepToDeleteUser();
-        stepToDeleteUser.deletionUser(accessTokenFromResponse);
-    };
-
-    @Test
-    @DisplayName("Get a specific order with authorization")
-    public void getOrderWithAuthorization() {
+    @Before
+    @DisplayName("set up ingredients set, creating a new user for the upcoming tests ")
+    public void executedBeforeEach() {
 
         //set up a needed set of ingredients
         ingredients.setIngredients(
@@ -40,13 +35,23 @@ public class GetOrderTest {
                         newGeneratedData.getArrayWithActualIngredients().get(3)});
 
         //a new user creating
-        ValidatableResponse response1 = postUserRequest.createNewUser(email, password, name);
+        response1 = postUserRequest.createNewUser(email, password, name);
+
+    }
+
+    @After
+    @DisplayName("delete all users that were created for tests purpose within current test")
+    public void deleteAllUsersCreatedInLoginTestClass() {
+        DeleteUserRequest deleteUserRequest = new DeleteUserRequest();
+        deleteUserRequest.deleteUser(accessTokenFromResponse);
+    }
+
+    @Test
+    @DisplayName("Get a specific order with authorization")
+    public void getOrderWithAuthorization() {
 
         //extract the user's access token
         accessTokenFromResponse = stepToGetTokens.getAccessToken(response1);
-
-        //creating a new order using recently prepared ingredients and an extracted access token
-        postOrdersRequest.createNewOrder(ingredients, accessTokenFromResponse);
 
         //execution of GET request for a specific order using a user's access token
         ValidatableResponse response2 = getOrdersRequest.getOrder(accessTokenFromResponse);
@@ -59,16 +64,6 @@ public class GetOrderTest {
     @Test
     @DisplayName("Get a specific order without authorization")
     public void getOrderWithoutAuthorization() {
-
-        //set up a needed set of ingredients
-        ingredients.setIngredients(
-                new String[]{newGeneratedData.getArrayWithActualIngredients().get(7),
-                        newGeneratedData.getArrayWithActualIngredients().get(2),
-                        newGeneratedData.getArrayWithActualIngredients().get(3)});
-
-        //a new user creating
-        ValidatableResponse response1 = postUserRequest.createNewUser(email, password, name);
-
         stepToGetTokens.getAccessToken(response1);
 
         //create empty access token
